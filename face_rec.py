@@ -11,12 +11,7 @@ import time
 from numpy.linalg import norm
 
 # ideas: first look for large faces, if not found, look for small faces
-# cut the background from the face
 # apply some pre-processing to the images in both probe and gallery sets to reduce similarity
-# maybe estimate the edges of faces to end up with a small face? what happens to the already-small images in this case?
-# guess we don't need this using gray-scale images
-
-
 
 
 
