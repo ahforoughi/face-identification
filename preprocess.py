@@ -13,26 +13,6 @@ from retinaface import RetinaFace
 
 
 
-print("connecting to mongo...")
-client = MongoClient(host='localhost', port=27017)
-db = client.visionism
-db.authenticate('visionism', '09016995946')
-collection = db.visionism
-collection.remove({})
-
-# read the list of probe images
-probe_directory = "http://localhost/images/probe/"
-probe_images = requests.get(probe_directory + "images.txt").text.split()
-print("The number of probe images is equal to " + str(len(probe_images)))
-
-# read the list of gallery images
-gallery_directory = "http://localhost/images/gallery/"
-gallery_images = requests.get(gallery_directory + "images.txt").text.split()
-print("The number of gallery images is equal to " + str(len(gallery_images)))
-
-
-print("loading image " + gallery_images[1])
-
 
 def detect_face(url):
 
@@ -60,21 +40,21 @@ def detect_face(url):
         cv2.destroyAllWindows()
         return faces
 
-
     bounding_box = results[0]['box']
     keypoints = results[0]['keypoints']
 
     cv2.rectangle(pixels,
                 (bounding_box[0], bounding_box[1]),
-                (bounding_box[0]+bounding_box[2], bounding_box[1] + bounding_box[3]),
+                (bounding_box[0]+bounding_box[2],  
+                bounding_box[1] + bounding_box[3]),
                 (0,155,255),
                 2)
 
-    cv2.circle(pixels,(keypoints['left_eye']), 2, (255,0,0), 2)
-    cv2.circle(pixels,(keypoints['right_eye']), 2, (255,0,0), 2)
-    cv2.circle(pixels,(keypoints['nose']), 2, (255,0,0), 2)
-    cv2.circle(pixels,(keypoints['mouth_left']), 2, (255,0,0), 2)
-    cv2.circle(pixels,(keypoints['mouth_right']), 2, (255,0,0), 2)
+    cv2.circle(pixels, (keypoints['left_eye']), 2, (255, 0,0), 2)
+    cv2.circle(pixels, (keypoints['right_eye']), 2, (255, 0,0), 2)
+    cv2.circle(pixels, (keypoints['nose']), 2, (255,0,0), 2)
+    cv2.circle(pixels, (keypoints['mouth_left']), 2, (255, 0,0), 2)
+    cv2.circle(pixels, (keypoints['mouth_right']), 2, (255, 0,0), 2)
 
 
     #cv2.imwrite("ivan_drawn.jpg", pixels)
@@ -83,4 +63,8 @@ def detect_face(url):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+    print(results)
     return results
+
+
+detect_face('http://localhost/images/gallery/S000001.jpg')
