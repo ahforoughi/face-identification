@@ -1,9 +1,16 @@
-from arcface import ArcFace
+import numpy as np
+from PIL import Image
 
-face_rec = ArcFace.ArcFace()
 
-def arc_similarity(probe, gallery):
-    emb_probe = face_rec.calc_emb(probe)
-    emb_gallery = face_rec.calc_emb(gallery)
 
-    return face_rec.get_distance_embeddings(emb_probe, emb_gallery)
+def arc_similarity(arc, probe, gallery):
+    p_image_bytes = Image.open(probe)
+    g_image_bytes = Image.open(gallery)
+
+    probe = np.float32(np.asarray(p_image_bytes))
+    gallery = np.float32(np.asarray(g_image_bytes))
+
+    emb_probe = arc.calc_emb(probe)
+    emb_gallery = arc.calc_emb(gallery)
+    return arc.get_distance_embeddings(emb_probe, emb_gallery)
+    
