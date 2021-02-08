@@ -1,3 +1,4 @@
+from math import pi
 from PIL import Image
 import requests
 import numpy as np
@@ -7,25 +8,22 @@ import time
 from numpy.linalg import norm
 import numpy as np
 import cv2
+import math
 
 
-def detect_face(image_bytes, mtcnn_detector, retina_detector):
-
-    image = Image.open(image_bytes)
-    #image = image.convert('RGB')
-    # convert to array
-    pixels = np.asarray(image)
+def detect_face(pixels, mtcnn_detector, retina_detector):
 
     # check which model is used
     check_mtcnn = 1
 
     # detect faces in the image using mtcnn 
     results = mtcnn_detector.detect_faces(pixels)
+    image_aligned = face_alignment(pixels, results)
     #if result in MTCNN do not work well or with lower accuarcy we will use Retina for face detection 
     if (not results) or results[0]['confidence'] < 0.9:
         check_mtcnn = 0
         print("====== mtcnn not working")
-        results = retina_detector.predict(pixels)
+        results = retina_detector.predict(image_aligned)
         # result_img = detector.draw(pixels,faces)
         # cv2.imshow("result", result_img)
         # cv2.waitKey()
@@ -56,5 +54,68 @@ def detect_face(image_bytes, mtcnn_detector, retina_detector):
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
     return results, check_mtcnn
+
+
+def EuclideanDistance(source_representation, test_representation):
+    euclidean_distance = source_representation - test_representation
+    euclidean_distance = np.sum(np.multiply(euclidean_distance, euclidean_distance))
+    euclidean_distance = np.sqrt(euclidean_distance)
+    return euclidean_distance
+
+def alignment_procedure(img, left_eye, right_eye):
+
+    #this function aligns given face in img based on left and right eye coordinates
+
+    left_eye_x, left_eye_y = left_eye
+    right_eye_x, right_eye_y = right_eye
+
+    #-----------------------
+    #find rotation direction
+
+    if left_eye_y > right_eye_y:
+        point_3rd = (right_eye_x, left_eye_y)
+        direction = -1 #rotate same direction to clock
+    else:
+        point_3rd = (left_eye_x, right_eye_y)
+        direction = 1 #rotate inverse direction of clock
+
+    #-----------------------
+    #find length of triangle edges
+
+    a = EuclideanDistance(np.array(left_eye), np.array(point_3rd))
+    b = EuclideanDistance(np.array(right_eye), np.array(point_3rd))
+    c = EuclideanDistance(np.array(right_eye), np.array(left_eye))
+
+    #-----------------------
+
+    #apply cosine rule
+
+    if b != 0 and c != 0: #this multiplication causes division by zero in cos_a calculation
+
+        cos_a = (b*b + c*c - a*a)/(2*b*c)
+        angle = np.arccos(cos_a) #angle in radian
+        angle = (angle * 180) / math.pi #radian to degree
+
+        #-----------------------
+        #rotate base image
+
+        if direction == -1:
+            angle = 90 - angle
+
+        img = Image.fromarray(img)
+        img = np.array(img.rotate(direction * angle))
+
+    #-----------------------
+
+    return img #return img anyway
+
+def face_alignment(img, results):
+    detection = results[0]
+    keypoints = detection["keypoints"]
+    left_eye = keypoints["left_eye"]
+    right_eye = keypoints["right_eye"]
+
+    img = alignment_procedure(img, left_eye, right_eye)
+    return img
 
 

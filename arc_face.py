@@ -5,11 +5,10 @@ def arc_similarity(arc, probe, gallery):
     '''
         input images are IOBytes 
     '''
-    p_image_bytes = Image.open(probe)
-    g_image_bytes = Image.open(gallery)
 
-    probe = np.float32(np.asarray(p_image_bytes))
-    gallery = np.float32(np.asarray(g_image_bytes))
+
+    probe = np.float32(probe)
+    gallery = np.float32(gallery)
 
     emb_probe = arc.calc_emb(probe)
     emb_gallery = arc.calc_emb(gallery)

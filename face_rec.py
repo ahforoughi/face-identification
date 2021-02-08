@@ -54,11 +54,14 @@ for gallery_image in gallery_images:
 
     g_image = requests.get(gallery_directory + gallery_image)
     g_image_bytes = BytesIO(g_image.content)
-    results , _ = detect_face(g_image_bytes, mtcnn_detector, retina_detector)
+    g_image = Image.open(g_image_bytes)
+    #image = image.convert('RGB')
+    # convert to array
+    g_pixels = np.asarray(g_image)
+    results , _ = detect_face(g_pixels, mtcnn_detector, retina_detector)
 
     if len(results):
-        valid_gallery[gallery_image] = g_image_bytes 
-        #break 
+        valid_gallery[gallery_image] = g_pixels 
         
 print("size of valid gallery " + str(len(valid_gallery)))  
 
@@ -66,13 +69,17 @@ for probe_image in probe_images:
     print('examining probe image ' + str(probe_images.index(probe_image)) + ' out of total ' + str(len(probe_images)) + ' images...')
     p_image = requests.get(probe_directory + probe_image)
     p_image_bytes = BytesIO(p_image.content)
-    results , _ = detect_face(p_image_bytes, mtcnn_detector, retina_detector)
+    p_image = Image.open(p_image_bytes)
+    #image = image.convert('RGB')
+    # convert to array
+    p_pixels = np.asarray(p_image)
+    results , _ = detect_face(p_pixels, mtcnn_detector, retina_detector)
 
     if len(results):
         #TODO: see if we can pass more than one probe to arc_similarity and make the answer as it must be 
-        valid_probe[probe_image] = p_image_bytes 
+        valid_probe[probe_image] = p_pixels 
         for g_key in valid_gallery:
-            score = arc_similarity(arc_detector, p_image_bytes, valid_gallery[g_key])
+            score = arc_similarity(arc_detector, p_pixels, valid_gallery[g_key])
             #for scaling score between 1 and 100 
             scaled_score = (score/3)*100
             print(f"comparing {probe_image} and {g_key} " + str(scaled_score))
