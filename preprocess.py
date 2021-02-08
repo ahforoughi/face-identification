@@ -21,14 +21,11 @@ def detect_face(image_bytes, mtcnn_detector, retina_detector):
 
     # detect faces in the image using mtcnn 
     results = mtcnn_detector.detect_faces(pixels)
-    print("++++++++mtcn", results)
-
     #if result in MTCNN do not work well or with lower accuarcy we will use Retina for face detection 
-    if (not results) or results[0]['confidence'] < 0.99:
+    if (not results) or results[0]['confidence'] < 0.9:
         check_mtcnn = 0
         print("====== mtcnn not working")
         results = retina_detector.predict(pixels)
-        print(results)
         # result_img = detector.draw(pixels,faces)
         # cv2.imshow("result", result_img)
         # cv2.waitKey()
@@ -58,7 +55,6 @@ def detect_face(image_bytes, mtcnn_detector, retina_detector):
     # cv2.imshow("image2", pixels)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
-    print()
     return results, check_mtcnn
 
 

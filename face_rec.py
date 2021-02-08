@@ -43,9 +43,11 @@ arc_detector = ArcFace.ArcFace()
 K = 1
 
 
-
-valid_gallery = []
+# valid gallery stores bytes of images 
+valid_gallery = {}
+valid_probe = {}
 couldnt_find_face_in_probe = []
+similarities = []
 
 for gallery_image in gallery_images:
     print("encoding gallery images" + gallery_image)
@@ -55,11 +57,10 @@ for gallery_image in gallery_images:
     results , _ = detect_face(g_image_bytes, mtcnn_detector, retina_detector)
 
     if len(results):
-        valid_gallery.append(g_image_bytes)
-        print(valid_gallery)
-        break
+        valid_gallery[gallery_image] = g_image_bytes 
+        #break 
         
-
+print("size of valid gallery " + str(len(valid_gallery)))  
 
 for probe_image in probe_images:
     print('examining probe image ' + str(probe_images.index(probe_image)) + ' out of total ' + str(len(probe_images)) + ' images...')
@@ -68,24 +69,29 @@ for probe_image in probe_images:
     results , _ = detect_face(p_image_bytes, mtcnn_detector, retina_detector)
 
     if len(results):
-        scores = arc_similarity(arc_detector, p_image_bytes, valid_gallery[0] )
-        print(scores)
-        break
-
         #TODO: see if we can pass more than one probe to arc_similarity and make the answer as it must be 
-        # idx = np.argpartition(scores, -K)
-        # k_scores = idx[-K:]
-
-        # print('Probe ' + str(probe_images.index(probe_image)) + ' score list')
-        # for i in range(0, len(k_scores)):
-        #     print('Gallery ' + str(k_scores[int(i)]) + ', Score ' + str(scores[k_scores[int(i)]]))
+        valid_probe[probe_image] = p_image_bytes 
+        for g_key in valid_gallery:
+            score = arc_similarity(arc_detector, p_image_bytes, valid_gallery[g_key])
+            #for scaling score between 1 and 100 
+            scaled_score = (score/3)*100
+            print(f"comparing {probe_image} and {g_key} " + str(scaled_score))
+            similarities.append({g_key.split(".")[0] : str(score)})
+         #   break
     
-        # # uncomment to see the k-most similar gallery images to the probe image
-        # for index, value in enumerate(idx[-K:]):
-        #     known_img = requests.get(gallery_directory + gallery_images[value])
-        #     known_img = Image.open(BytesIO(known_img.content))
-            # known_img.show()
-        # x =  input('Press enter to go to the next probe image')
+        post = {probe_image.split(".")[0] : similarities}
+        inserted_id = collection.insert_one(post).inserted_id
+        #break
+
+
+for post in collection.find():
+    pprint.pprint(post)
+
+        
+            
+            
+
+
 
 
 
