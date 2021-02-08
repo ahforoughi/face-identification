@@ -13,6 +13,7 @@ from mtcnn import MTCNN
 from retinaface import RetinaFace
 from arcface import ArcFace
 from preprocess import detect_face
+from preprocess import preprocess
 from arc_face import arc_similarity
 
 # connect to MongoDB to store results in one database
@@ -62,6 +63,8 @@ for gallery_image in gallery_images:
 
     if len(results):
         valid_gallery[gallery_image] = g_pixels 
+        break
+        
         
 print("size of valid gallery " + str(len(valid_gallery)))  
 
@@ -79,7 +82,10 @@ for probe_image in probe_images:
         #TODO: see if we can pass more than one probe to arc_similarity and make the answer as it must be 
         valid_probe[probe_image] = p_pixels 
         for g_key in valid_gallery:
-            score = arc_similarity(arc_detector, p_pixels, valid_gallery[g_key])
+            preprocessed_prob = preprocess(p_pixels)
+            preprocessed_gallery = preprocess(valid_gallery[g_key])
+
+            score = arc_similarity(arc_detector, preprocessed_prob, preprocessed_gallery)
             #for scaling score between 1 and 100 
             scaled_score = (score/3)*100
             print(f"comparing {probe_image} and {g_key} " + str(scaled_score))

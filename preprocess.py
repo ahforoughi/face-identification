@@ -1,14 +1,12 @@
-from math import pi
 from PIL import Image
-import requests
 import numpy as np
-from pymongo import MongoClient
-from io import BytesIO
 import time
 from numpy.linalg import norm
 import numpy as np
 import cv2
 import math
+from tensorflow.keras.preprocessing import image as image_preprocess
+
 
 
 def detect_face(pixels, mtcnn_detector, retina_detector):
@@ -19,6 +17,8 @@ def detect_face(pixels, mtcnn_detector, retina_detector):
     # detect faces in the image using mtcnn 
     results = mtcnn_detector.detect_faces(pixels)
     image_aligned = face_alignment(pixels, results)
+
+
     #if result in MTCNN do not work well or with lower accuarcy we will use Retina for face detection 
     if (not results) or results[0]['confidence'] < 0.9:
         check_mtcnn = 0
@@ -119,3 +119,10 @@ def face_alignment(img, results):
     return img
 
 
+def preprocess(img):
+    target_size=(224, 224)
+    img = cv2.resize(img, target_size)
+    img_pixels = image_preprocess.img_to_array(img)
+    #img_pixels = np.expand_dims(img_pixels, axis = 0)
+    img_pixels /= 255 #normalize input in [0, 1]
+    return img_pixels

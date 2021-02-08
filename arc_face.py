@@ -5,8 +5,7 @@ def arc_similarity(arc, probe, gallery):
     '''
         input images are IOBytes 
     '''
-
-
+    
     probe = np.float32(probe)
     gallery = np.float32(gallery)
 
