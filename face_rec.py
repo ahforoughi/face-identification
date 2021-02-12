@@ -16,19 +16,19 @@ import matplotlib.pyplot as plt
 
 # connect to MongoDB to store results in one database
 # which named your team_name and authorized with your team_pass
-client = MongoClient(host='localhost', port=27017)
+client = MongoClient(host='mongodb', port=27017)
 db = client.visionism
 db.authenticate('visionism', '09016995946')
 collection = db.visionism
 collection.remove({})
 
 # read the list of probe images
-probe_directory = "http://localhost/images/probe/"
+probe_directory = "http://nginx/images/probe/"
 probe_images = requests.get(probe_directory + "images.txt").text.split()
 print("The number of probe images is equal to " + str(len(probe_images)))
 
 # read the list of gallery images
-gallery_directory = "http://localhost/images/gallery/"
+gallery_directory = "http://nginx/images/gallery/"
 gallery_images = requests.get(gallery_directory + "images.txt").text.split()
 print("The number of gallery images is equal to " + str(len(gallery_images)))
 
@@ -94,7 +94,7 @@ for probe_image in probe_images:
 
             score = arc_similarity(arc_detector, p_pixels, valid_gallery[g_key])
             #for scaling score between 1 and 100 
-            scaled_score = (score/3)*100
+            scaled_score = (1/score)*100
             print(f"comparing {probe_image} and {g_key} " + str(scaled_score))
             similarities.append({g_key.split(".")[0] : str(score)})
          #   break
